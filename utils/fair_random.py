@@ -23,8 +23,8 @@ class FairRandom:
         self.hmac = hmac.new(
             self.secret_key,
             str(self.computer_value).encode(),
-            hashlib.sha256.hexdigest(),
-        )
+            hashlib.sha3_256,
+        ).hexdigest()
 
     def reveal_key_and_computer_value(self):
         """
@@ -48,8 +48,6 @@ class FairRandom:
         """
 
         hmac_check = hmac.new(
-            bytes.fromhex(key),
-            str(value).encode(),
-            hashlib.sha256.hexdigest(),
-        )
+            bytes.fromhex(key), str(value).encode(), hashlib.sha3_256
+        ).hexdigest()
         return hmac_check == self.hmac

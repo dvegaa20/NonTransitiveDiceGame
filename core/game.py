@@ -1,4 +1,5 @@
 from utils.fair_random import FairRandom
+from utils.probability_table import ProbabilityTable
 import random
 
 
@@ -23,9 +24,12 @@ class Game:
         print("\nDetermining the first player...")
         fair_random = FairRandom(0, 1)
         print(f"HMAC: {fair_random.hmac}")
-        user_choice = int(input("Guess my selection (0 or 1): "))
+        print("I selected a random value, 0 or 1.")
+        user_choice = int(input("\nGuess my selection (0 or 1): "))
+        if user_choice not in [0, 1]:
+            raise ValueError("Invalid input. Please choose 0 or 1.")
         key, computer_choice = fair_random.reveal_key_and_computer_value()
-        print(f"My choice: {computer_choice} (Key: {key})")
+        print(f"\nMy choice: {computer_choice} (Key: {key})")
         if fair_random.verify_hmac(key, computer_choice):
             return "user" if user_choice == computer_choice else "computer"
         else:
@@ -59,6 +63,10 @@ class Game:
 
         if first_player == "user":
             user_dice_idx = int(input("\nYou won the toss! Choose your dice: "))
+            if user_dice_idx not in range(len(self.dice)):
+                raise ValueError(
+                    f"Invalid input. Please choose a number between 0 and {len(self.dice) - 1}."
+                )
             print(f"\nYou chose the: {self.dice[user_dice_idx]} dice.")
             computer_dice_idx = (user_dice_idx + 1) % len(self.dice)
             print(f"I choose the: {self.dice[computer_dice_idx]} dice.")
@@ -66,6 +74,10 @@ class Game:
             computer_dice_idx = random.randint(0, len(self.dice) - 1)
             print(f"\nI won the toss! I choose dice {self.dice[computer_dice_idx]}.")
             user_dice_idx = int(input("Choose your dice: "))
+            if user_dice_idx not in range(len(self.dice)):
+                raise ValueError(
+                    f"Invalid input. Please choose a number between 0 and {len(self.dice) - 1}."
+                )
             print(f"You chose the: {self.dice[user_dice_idx]} dice.")
             if user_dice_idx == computer_dice_idx:
                 raise ValueError(
@@ -80,13 +92,48 @@ class Game:
         computer_total = 0
 
         for round_num in range(rounds):
-            print(f"\nRound {round_num + 1}:")
+            print("\n===============================")
+            print(f"Round {round_num + 1}:")
 
             # Computer's turn
-            print("\nIt's time for my throw.")
+            (
+                print("\nIt's time for your throw.")
+                if first_player == "user"
+                else "\nIt's time for my throw."
+            )
             fair_random = FairRandom(0, rounds - 1)
             print(f"HMAC: {fair_random.hmac}")
-            user_mod = int(input("Add your number modulo 6: "))
+
+            while True:
+                user_input = input(
+                    "\nAdd your number modulo 6 : \n0 - 0 \n1 - 1 \n2 - 2 \n3 - 3 \n4 - 4 \n5 - 5 \nX - exit \n? - help\n\n"
+                )
+
+                if user_input in ["X", "?"]:
+                    user_mod = user_input
+                else:
+                    try:
+                        user_mod = int(user_input)
+                    except ValueError:
+                        print(
+                            "Invalid input. Please choose a number between 0 and 5 or 'X' to exit or '?' for help"
+                        )
+                        continue
+
+                if user_mod == "X":
+                    print("Goodbye!")
+                    exit()
+
+                if user_mod == "?":
+                    ProbabilityTable.generate_probability_table(self.dice)
+                    continue
+
+                if user_mod not in range(6):
+                    print("Invalid input. Please choose a number between 0 and 5")
+                    continue
+
+                break
+
             key, computer_mod = fair_random.reveal_key_and_computer_value()
             print(f"My number is {computer_mod} (KEY={key}).")
             mod_result = (user_mod + computer_mod) % rounds
@@ -94,7 +141,7 @@ class Game:
             print(
                 f"The result is {computer_mod} + {user_mod} = {mod_result} (mod {rounds})."
             )
-            print(f"My throw is {computer_throw}.")
+            print(f"\nMy throw is {computer_throw}.")
 
             # User's turn
             print("\nIt's time for your throw.")

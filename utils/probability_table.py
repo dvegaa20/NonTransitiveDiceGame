@@ -23,8 +23,8 @@ class ProbabilityTable:
         for i in range(size):
             for j in range(size):
                 if i != j:
-                    table[i][j] = ProbabilityCalc.calculate_probability(
-                        dice[i], dice[j], 3
+                    table[i][j] = round(
+                        ProbabilityCalc.calculate_probability(dice[i], dice[j]), 3
                     )
 
         headers = [f"Die {i + 1}" for i in range(size)]
